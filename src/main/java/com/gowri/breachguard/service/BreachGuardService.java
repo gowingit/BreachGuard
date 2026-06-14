@@ -1,5 +1,6 @@
 package com.gowri.breachguard.service;
 
+import com.gowri.breachguard.util.Sha1Util;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -13,16 +14,26 @@ public class BreachGuardService {
 		this.restClient = restClient;
 	}
 
-	public String verifyBreach(String uPassword) {
+	public boolean verifyBreach(String uPassword) {
 
-		restClient.get()
-				.uri("/range/{hashPrefix}", sha1Prefix(uPassword))
+		String hashPwd = Sha1Util.sha1(uPassword).toUpperCase();
+		String pwdPrefix = hashPwd.substring(0, 5);
+		String pwdSuffix = hashPwd.substring(5);
+		String apiResponse = restClient.get()
+				.uri("/range/{hashPrefix}", pwdPrefix)
 				.retrieve()
 				.body(String.class);
-		return "";
+
+		if(apiResponse == null) return false;
+		return apiResponse.contains(pwdSuffix);
 	}
 
-	private String sha1Prefix(String uPassword) {
-		return "TODO";
-	}
 }
+
+
+
+
+
+
+
+
